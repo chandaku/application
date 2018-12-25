@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <suppress checks="OperatorWrap" files="Constants.java"/>
+    <suppress checks="LineLength" files="Constants.java"/>
+    <suppress checks="HideUtilityClassConstructor" files="WeatherServiceApplication.java"/>
+    <suppress checks="LineLength" files=""/>
+    <suppress checks="MethodName" files=""/>
+    <suppress checks="LineLength" files=""/>
+    <suppress checks="ParameterNumber" files=""/>
+    <suppress checks="VisibilityModifier" files=""/>
+    <suppress checks="MethodLength" files=""/>
+    <suppress checks="VisibilityModifier" files=""/>
+</suppressions>

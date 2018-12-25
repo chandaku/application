@@ -1,0 +1,8 @@
+rootProject.name = 'application'
+
+include(
+        'sample-service'
+)
+
+
+

@@ -1,0 +1,141 @@
+import com.github.spotbugs.SpotBugsTask
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        maven { url spring_repo }
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${spring_boot_version}")
+        classpath("gradle.plugin.com.palantir.gradle.docker:gradle-docker:${docker_plugin_version}")
+        classpath("gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:${spot_bugs_version}")
+        classpath "io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE"
+    }
+}
+
+def javaProjects = [project(':sample-service')]
+def services = [project(':sample-service')]
+
+
+
+configure(javaProjects) {
+    group = 'com.assignment'
+
+    repositories {
+        mavenLocal()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        maven {
+            url spring_repo
+        }
+        maven {
+            url 'https://repo.spring.io/libs-milestone'
+        }
+    }
+
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'checkstyle'
+    apply plugin: 'com.github.spotbugs'
+    apply plugin: 'pmd'
+    apply plugin: 'jacoco'
+    apply plugin: "io.spring.dependency-management"
+
+    sourceCompatibility = java_version
+    targetCompatibility = java_version
+
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-sleuth:2.0.2.RELEASE"
+        }
+    }
+
+    dependencies {
+        compile('org.slf4j:slf4j-api')
+        compile('org.slf4j:log4j-over-slf4j')
+        compile('org.javatuples:javatuples:1.2')
+        testCompile('junit:junit')
+        testCompile('org.mockito:mockito-core')
+        testCompile('org.assertj:assertj-core')
+    }
+
+    checkstyle {
+        ignoreFailures = false
+        configFile = rootProject.file('codequality/checkstyle.xml')
+        sourceSets = [sourceSets.main]
+    }
+
+    spotbugs {
+        excludeFilter = rootProject.file('codequality/findbugs-exclude.xml')
+        ignoreFailures = false
+        sourceSets = [sourceSets.main]
+    }
+
+    pmd {
+        ignoreFailures = false
+        pmdTest.enabled = false
+        ruleSetFiles = getRootProject().files('codequality/pmd-ruleset.xml')
+
+    }
+
+    tasks.withType(Pmd) {
+        reports {
+            xml.enabled = true
+            html.enabled = true
+        }
+    }
+
+    tasks.withType(SpotBugsTask) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+
+    tasks.withType(Checkstyle) {
+        exclude '**/model/**'
+        exclude '**/mappers/**'
+    }
+
+    jacocoTestReport {
+        group = "Reporting"
+        reports {
+            xml.enabled true
+            csv.enabled false
+            html.destination new File("${buildDir}/reports/coverage")
+        }
+    }
+}
+
+configure(services) {
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'com.palantir.docker'
+
+    afterEvaluate {
+        dependencyManagement {
+            imports {
+                mavenBom "org.springframework.cloud:spring-cloud-dependencies:${project.spring_cloud_version}"
+            }
+        }
+        dependencies {
+            compile("org.springframework.cloud:spring-cloud-starter-kubernetes:${project.spring_cloud_k8s_version}")
+            compile("org.springframework.cloud:spring-cloud-starter-kubernetes-netflix:${project.spring_cloud_k8s_netflix_version}")
+            testCompile('org.springframework.boot:spring-boot-starter-test')
+        }
+    }
+}
+
+
+
+wrapper {
+    gradleVersion = '4.9'
+}

@@ -1,0 +1,55 @@
+sourceSets {
+    itest {
+        java.srcDir 'src/itest/java'
+        resources.srcDir 'src/itest/resources'
+    }
+}
+
+configurations {
+    itestImplementation.extendsFrom testImplementation
+}
+
+task itest(type: Test) {
+    description = "Runs integration tests."
+
+    setTestClassesDirs(sourceSets.itest.output.classesDirs)
+    classpath = sourceSets.itest.runtimeClasspath
+    reports.html.setDestination(file("${project.buildDir}/reports/itest"))
+    reports.junitXml.setDestination(file("${project.buildDir}/itest-results"))
+    binResultsDir = file("${project.buildDir}/itest-results/binary/itest")
+
+    // always run integration tests after unit tests in order to fail fast
+    mustRunAfter test
+}
+
+dependencies {
+    itestCompile sourceSets.main.output
+    itestCompile sourceSets.test.output
+    itestCompile configurations.compile
+    itestCompile configurations.testCompile
+    itestRuntime configurations.runtime
+    itestRuntime configurations.testRuntime
+}
+
+
+
+gradle.projectsEvaluated {
+    def unitTestTasks = []
+    gradle.rootProject.allprojects { project ->
+        unitTestTasks.addAll(project.tasks.findAll { it.name == 'test' })
+    }
+    unitTestTasks.each { unitTestTask ->
+        project.itest.mustRunAfter unitTestTask
+    }
+}
+
+// Run integration tests during the 'check' lifecycle (which already includes 'test')
+check.dependsOn itest
+
+apply plugin: 'idea'
+idea {
+    module {
+        testSourceDirs += project.sourceSets.itest.java.srcDirs
+        testSourceDirs += project.sourceSets.itest.resources.srcDirs
+    }
+}

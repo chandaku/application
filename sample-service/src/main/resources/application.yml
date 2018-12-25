@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: weather-service
+weather:
+  service: https://api.darksky.net/forecast
+
+---
+
+spring:
+  profiles: test
+weather:
+  service: http://localhost:8090

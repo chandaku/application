@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <Match>
+        <Package name="~.*\.model"/>
+    </Match>
+    <Match>
+        <Package name="~.*\.event"/>
+    </Match>
+    <Match>
+        <Class name="com.assignment.weatherservice.WeatherServiceApplication"/>
+        <Method name="copyLineFrom"></Method>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"></Bug>
+    </Match>
+</FindBugsFilter>
